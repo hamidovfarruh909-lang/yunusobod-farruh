@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turon Telecom - Yunusobod Abonentlari Bazasi</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; text-align: center; }
+        
+        /* Qidiruv qismi */
+        .search-box { margin: 25px 0; text-align: center; }
+        .search-box input { width: 100%; max-width: 400px; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; outline: none; }
+        .search-box input:focus { border-color: #0056b3; }
+
+        /* Abonent kartochkasi */
+        .subscriber-card { background: #eef2f7; border-left: 5px solid #0056b3; padding: 20px; margin: 15px 0; border-radius: 6px; }
+        .subscriber-card h3 { margin-top: 0; color: #0056b3; }
+        .info-row { margin: 8px 0; font-size: 15px; }
+
+        /* Tugmalar dizayni */
+        .btn-group { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn { display: inline-block; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; }
+        
+        .btn-pay { background: #28a745; color: white; }
+        .btn-pay:hover { background: #218838; }
+
+        .btn-map { background: #ffcc00; color: #000; }
+        .btn-map:hover { background: #e6b800; }
+
+        .btn-call { background: #17a2b8; color: white; }
+        .btn-call:hover { background: #138496; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Turon Telecom</h1>
+        <h3 style="text-align: center; color: #555;">Yunusobod tumani abonentlari bazasi</h3>
+
+        <!-- Qidiruv paneli -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Abonent ismi, logini yoki raqami bo'yicha qidirish..." onkeyup="searchSubscriber()">
+        </div>
+
+        <!-- Abonentlar ro'yxati (Baza qismi) -->
+        <div id="subscriberList">
+            
+            <!-- 1-abonent namunasi -->
+            <div class="subscriber-card">
+                <h3>Fozilov Farrux Hamidovich</h3>
+                <div class="info-row"><b>Login:</b> farrux_909</div>
+                <div class="info-row"><b>Manzil:</b> Yunusobod-4, 15-uy, 42-xonadon</div>
+                <div class="info-row"><b>Tarif:</b> Turon 100 Mbps + TV</div>
+                <div class="info-row"><b>Telefon:</b> +998 90 123-45-67</div>
+                
+                <div class="btn-group">
+                    <a href="https://alif.uz" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
+                    <a href="https://yandex.uz/maps/?text=Tashkent,Yunusobod-4,15" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
+                    <a href="tel:+998901234567" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
+                </div>
+            </div>
+
+            <!-- 2-abonent namunasi -->
+            <div class="subscriber-card">
+                <h3>Karimov Alisher</h3>
+                <div class="info-row"><b>Login:</b> alisher_k</div>
+                <div class="info-row"><b>Manzil:</b> Yunusobod-12, 8-uy, 12-xonadon</div>
+                <div class="info-row"><b>Tarif:</b> Turon 50 Mbps</div>
+                <div class="info-row"><b>Telefon:</b> +998 93 987-65-43</div>
+                
+                <div class="btn-group">
+                    <a href="https://alif.uz" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
+                    <a href="https://yandex.uz/maps/?text=Tashkent,Yunusobod-12,8" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
+                    <a href="tel:+998939876543" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Oddiy qidiruv funksiyasi
+        function searchSubscriber() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('subscriber-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                let text = cards[i].innerText.toLowerCase();
+                if (text.includes(input)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
