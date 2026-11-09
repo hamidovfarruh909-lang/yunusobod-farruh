@@ -41,7 +41,12 @@
         .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; }
         .search-box:focus { border-color: var(--primary); }
         
-        /* Sozlamalar va Forma dizayni */
+        /* Excel yuklash bloki */
+        .upload-card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; border: 2px dashed var(--primary); }
+        .upload-card input[type="file"] { display: none; }
+        .upload-btn { display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .upload-btn:hover { background: var(--primary-dark); }
+
         .settings-section { background: var(--card-bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--success); }
         .settings-section h3 { font-size: 18px; color: var(--success-dark); margin-bottom: 15px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
@@ -81,7 +86,6 @@
         
         .load-more { display: block; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 20px 0; text-align: center; }
         
-        /* Modal oyna */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--danger-dark); }
@@ -99,7 +103,6 @@
             <p class="subtitle">Yunusobod tumani abonentlari bazasi</p>
         </header>
 
-        <!-- Navigatsiya tugmalari -->
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('main')">📋 Umumiy baza</button>
             <button class="tab-btn" onclick="switchTab('newSubs')">🆕 Yangi abonentlar (<span id="newCountBadge">0</span>)</button>
@@ -108,13 +111,22 @@
 
         <!-- 1. UMUMIY BAZA BO'LIMI -->
         <div id="mainTab" class="tab-content active">
+            <!-- Excel fayl yuklash tugmasi -->
+            <div class="upload-card">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Bazani yangilash uchun Excel faylni tanlang:</p>
+                <label class="upload-btn">
+                    📁 Excel faylni yuklash
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
+                </label>
+            </div>
+
             <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
-            <div id="stats" class="stats">Baza yuklanmoqda...</div>
+            <div id="stats" class="stats">Iltimos, Excel bazani yuklang...</div>
             <div id="subscribersList"></div>
             <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
         </div>
 
-        <!-- 2. YANGI ABONENTLAR BO'LIMI (5 kunlik jadval) -->
+        <!-- 2. YANGI ABONENTLAR BO'LIMI -->
         <div id="newSubsTab" class="tab-content">
             <div class="stats" style="margin-bottom: 15px;">5 kun ichida umumiy bazaga o'tuvchi yangi abonentlar ro'yxati:</div>
             <div id="newSubscribersList"></div>
@@ -165,40 +177,51 @@
         let filteredSubscribers = [];
         let displayedCount = 20;
         let pendingDeleteId = null;
-        let pendingDeleteType = null; // 'main' yoki 'new'
+        let pendingDeleteType = null;
 
-        async function loadData() {
-            try {
-                let localSubs = localStorage.getItem('turon_subscribers_list');
-                let localNew = localStorage.getItem('turon_new_subscribers');
-                let localDeleted = localStorage.getItem('turon_deleted_subscribers');
-                
-                if (localNew) newSubscribers = JSON.parse(localNew);
-                if (localDeleted) deletedSubscribers = JSON.parse(localDeleted);
+        function loadData() {
+            let localSubs = localStorage.getItem('turon_subscribers_list');
+            let localNew = localStorage.getItem('turon_new_subscribers');
+            let localDeleted = localStorage.getItem('turon_deleted_subscribers');
+            
+            if (localNew) newSubscribers = JSON.parse(localNew);
+            if (localDeleted) deletedSubscribers = JSON.parse(localDeleted);
 
-                checkNewSubscribersDays(); // 5 kunlik muddatni tekshirish
+            checkNewSubscribersDays();
 
-                if (localSubs) {
-                    subscribers = JSON.parse(localSubs);
-                } else {
-                    const response = await fetch('YUNUSOBOD_BARRALIK_YAGONA_TARTIBLANGAN (1).xlsx');
-                    const arrayBuffer = await response.arrayBuffer();
-                    const data = new Uint8Array(arrayBuffer);
+            if (localSubs) {
+                subscribers = JSON.parse(localSubs);
+                filteredSubscribers = [...subscribers];
+                renderAll();
+            } else {
+                document.getElementById('stats').innerText = "Iltimos, yuqoridagi tugma orqali Excel bazani yuklang!";
+            }
+        }
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
                     subscribers = XLSX.utils.sheet_to_json(worksheet);
                     saveStorage();
+                    filteredSubscribers = [...subscribers];
+                    displayedCount = 20;
+                    renderAll();
+                    showToast("Excel baza muvaffaqiyatli yuklandi!");
+                } catch (error) {
+                    alert("Excel faylni o'qishda xatolik yuz berdi!");
+                    console.error(error);
                 }
-                
-                filteredSubscribers = [...subscribers];
-                renderAll();
-            } catch (error) {
-                document.getElementById('stats').innerText = "Xatolik: Excel faylni o'qishda muammo yuzaga keldi!";
-                console.error(error);
-            }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function saveStorage() {
@@ -230,7 +253,6 @@
             }
         }
 
-        // 5 kunlik muddatni tekshirish va umumiy bazaga o'tkazish
         function checkNewSubscribersDays() {
             const now = new Date().getTime();
             const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
@@ -239,7 +261,6 @@
             newSubscribers = newSubscribers.filter(sub => {
                 const addedTime = sub.addedTimestamp || now;
                 if (now - addedTime >= fiveDaysMs) {
-                    // 6-kuni umumiy bazaga o'tkazamiz
                     subscribers.unshift({
                         'Имя': sub.name,
                         'Логин': sub.login,
@@ -249,7 +270,7 @@
                         'Адрес': `${sub.district}, ${sub.quarter}, ${sub.building}-dom, ${sub.apartment}-kv`
                     });
                     updated = true;
-                    return false; // yangi abonentlar jadvalidan chiqarish
+                    return false;
                 }
                 return true;
             });
@@ -283,7 +304,6 @@
             saveStorage();
             renderAll();
 
-            // Maydonlarni tozalash
             document.getElementById('newDistrict').value = '';
             document.getElementById('newQuarter').value = '';
             document.getElementById('newBuilding').value = '';
@@ -346,26 +366,4 @@
             localStorage.setItem('comment_' + login, commentText);
         }
 
-        function renderAll() {
-            renderSubscribers();
-            renderNewSubscribers();
-            renderDeletedSubscribers();
-            document.getElementById('newCountBadge').innerText = newSubscribers.length;
-        }
-
-        function renderSubscribers() {
-            const listEl = document.getElementById('subscribersList');
-            const statsEl = document.getElementById('stats');
-            const loadMoreBtn = document.getElementById('loadMoreBtn');
-            
-            statsEl.innerText = `Topildi: ${filteredSubscribers.length} ta abonent (Jami bazada: ${subscribers.length} ta)`;
-            
-            const toDisplay = filteredSubscribers.slice(0, displayedCount);
-            
-            if (toDisplay.length === 0) {
-                listEl.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Hech qanday abonent topilmadi.</p>';
-                loadMoreBtn.style.display = 'none';
-                return;
-            }
-
-        
+        functi
