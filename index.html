@@ -5,95 +5,174 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turon Telecom - Yunusobod Abonentlari Bazasi</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { color: #0056b3; text-align: center; }
+        :root {
+            --primary-color: #0056b3;
+            --primary-dark: #003d82;
+            --success-color: #28a745;
+            --success-dark: #218838;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --bg-color: #f4f6f9;
+            --card-bg: #fff;
+            --text-color: #333;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; color: var(--text-color); }
+        .container { max-width: 900px; margin: 0 auto; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h1 { color: var(--primary-color); text-align: center; margin-bottom: 5px; font-size: 24px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
         
-        /* Qidiruv qismi */
-        .search-box { margin: 25px 0; text-align: center; }
-        .search-box input { width: 100%; max-width: 400px; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; outline: none; }
-        .search-box input:focus { border-color: #0056b3; }
+        .search-box { margin-bottom: 20px; text-align: center; }
+        .search-box input { width: 100%; max-width: 500px; padding: 14px 18px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; outline: none; transition: border-color 0.3s; box-sizing: border-box; }
+        .search-box input:focus { border-color: var(--primary-color); }
+        .stats { text-align: center; font-size: 13px; color: #777; margin-bottom: 15px; }
 
-        /* Abonent kartochkasi */
-        .subscriber-card { background: #eef2f7; border-left: 5px solid #0056b3; padding: 20px; margin: 15px 0; border-radius: 6px; }
-        .subscriber-card h3 { margin-top: 0; color: #0056b3; }
-        .info-row { margin: 8px 0; font-size: 15px; }
-
-        /* Tugmalar dizayni */
-        .btn-group { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; }
-        .btn { display: inline-block; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; }
+        .subscriber-card { background: #f8fafc; border-left: 5px solid var(--primary-color); padding: 18px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .subscriber-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .subscriber-name { font-size: 18px; font-weight: bold; color: var(--primary-color); margin: 0; }
+        .subscriber-login { background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; color: #475569; }
         
-        .btn-pay { background: #28a745; color: white; }
-        .btn-pay:hover { background: #218838; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; font-size: 14px; margin-bottom: 15px; }
+        .info-row span { color: #555; }
 
-        .btn-map { background: #ffcc00; color: #000; }
-        .btn-map:hover { background: #e6b800; }
+        .balance-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .balance-neg { background: #fee2e2; color: #991b1b; }
+        .balance-pos { background: #dcfce7; color: #166534; }
 
-        .btn-call { background: #17a2b8; color: white; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; text-align: center; transition: background 0.2s; }
+        
+        .btn-pay { background: var(--success-color); color: white; }
+        .btn-pay:hover { background: var(--success-dark); }
+
+        .btn-map { background: var(--warning-color); color: #000; }
+        .btn-map:hover { background: var(--warning-dark); }
+
+        .btn-call { background: var(--info-color); color: white; }
         .btn-call:hover { background: #138496; }
+
+        #loadMoreContainer { text-align: center; margin: 25px 0; }
+        .btn-load { background: var(--primary-color); color: white; border: none; padding: 12px 25px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-load:hover { background: var(--primary-dark); }
+        .no-results { text-align: center; color: #888; padding: 30px; font-size: 16px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Turon Telecom</h1>
-        <h3 style="text-align: center; color: #555;">Yunusobod tumani abonentlari bazasi</h3>
+        <div class="subtitle">Yunusobod tumani abonentlari bazasi platformasi</div>
 
-        <!-- Qidiruv paneli -->
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Abonent ismi, logini yoki raqami bo'yicha qidirish..." onkeyup="searchSubscriber()">
+            <input type="text" id="searchInput" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
         </div>
+        <div class="stats" id="statsInfo">Jami abonentlar yuklanmoqda...</div>
 
-        <!-- Abonentlar ro'yxati (Baza qismi) -->
-        <div id="subscriberList">
-            
-            <!-- 1-abonent namunasi -->
-            <div class="subscriber-card">
-                <h3>Fozilov Farrux Hamidovich</h3>
-                <div class="info-row"><b>Login:</b> farrux_909</div>
-                <div class="info-row"><b>Manzil:</b> Yunusobod-4, 15-uy, 42-xonadon</div>
-                <div class="info-row"><b>Tarif:</b> Turon 100 Mbps + TV</div>
-                <div class="info-row"><b>Telefon:</b> +998 90 123-45-67</div>
-                
-                <div class="btn-group">
-                    <a href="https://alif.uz" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
-                    <a href="https://yandex.uz/maps/?text=Tashkent,Yunusobod-4,15" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
-                    <a href="tel:+998901234567" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
-                </div>
-            </div>
-
-            <!-- 2-abonent namunasi -->
-            <div class="subscriber-card">
-                <h3>Karimov Alisher</h3>
-                <div class="info-row"><b>Login:</b> alisher_k</div>
-                <div class="info-row"><b>Manzil:</b> Yunusobod-12, 8-uy, 12-xonadon</div>
-                <div class="info-row"><b>Tarif:</b> Turon 50 Mbps</div>
-                <div class="info-row"><b>Telefon:</b> +998 93 987-65-43</div>
-                
-                <div class="btn-group">
-                    <a href="https://alif.uz" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
-                    <a href="https://yandex.uz/maps/?text=Tashkent,Yunusobod-12,8" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
-                    <a href="tel:+998939876543" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
-                </div>
-            </div>
-
+        <div id="subscriberList"></div>
+        <div id="loadMoreContainer" style="display:none;">
+            <button class="btn-load" onclick="loadMore()">Ko'proq ko'rsatish (+50)</button>
         </div>
     </div>
 
     <script>
-        // Oddiy qidiruv funksiyasi
-        function searchSubscriber() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.getElementsByClassName('subscriber-card');
+        // Jami 14681 ta abonent bazasi
+        const subscribers = [
+            {"Логин": "tmi946054213", "Имя": "Сагомонова Ануш Албертовна", "Tarif": "FTTX Comfort 60 (архивный)", "Стоимость тарифа": 145000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 123 1", "Телефон": "998946054213", "Баланс": -145000.0},
+            {"Логин": "tmi904275596", "Имя": "Шаймардонов Жавлон Зокир угли", "Tarif": "Barqaror /Стабильно (архив)", "Стоимость тарифа": 125000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 2А 1", "Телефон": "998904275596", "Баланс": -125000.0},
+            {"Логин": "t2121243", "Имя": "Арсланов Хусан Мелиевич", "Tarif": "Barqaror /Стабильно", "Стоимость тарифа": 125000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 4А 1", "Телефон": "998998964000", "Баланс": -125000.0},
+            {"Логин": "t2122495", "Имя": "Исмаилова Рена Карибовна", "Tarif": "Foydali /Выгодно (архив)", "Стоимость тарифа": 155000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 115 2", "Телефон": "998909605005", "Баланс": -153350.0},
+            {"Логин": "t2123318", "Имя": "Коровина Наталья Вячеславовна", "Tarif": "Cheksiz /Безгранично (архив)", "Стоимость тарифа": 200000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 125 4", "Телефон": "998903151607", "Баланс": -199950.0},
+            {"Логин": "t2124198", "Имя": "Кельдиярова Гульчехра Сайдиевна", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 129 6", "Телефон": "998909262555", "Баланс": -99000.0},
+            {"Логин": "tmi972781035", "Имя": "Эрназаров Комилжон Юлдашалиевич", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 131 6", "Телефон": "998972781035", "Баланс": -85000.0},
+            {"Логин": "t2611176", "Имя": "Абдиев Гайрат Ергашевич", "Tarif": "Arzon /Доступно (архив)", "Стоимость тарифа": 90000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 131 6", "Телефон": "998972611176", "Баланс": -90000.0},
+            {"Логин": "t2121683", "Имя": "Мингалимова Динара Едвановна", "Tarif": "Скорость 2 (архив)", "Стоимость тарифа": 85000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 2А 6", "Телефон": "998903454785", "Баланс": -84450.0},
+            {"Логин": "tyui901871869", "Имя": "КУРАЛБАЙЕВ СУЛТАН ПУЛАТОВИCХ", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 121 10", "Телефон": "998901871869", "Баланс": -105000.0}
+        ];
 
-            for (let i = 0; i < cards.length; i++) {
-                let text = cards[i].innerText.toLowerCase();
-                if (text.includes(input)) {
-                    cards[i].style.display = "";
-                } else {
-                    cards[i].style.display = "none";
-                }
+        let displayedCount = 50;
+        let filteredSubscribers = subscribers;
+
+        function renderSubscribers() {
+            const listEl = document.getElementById('subscriberList');
+            const statsEl = document.getElementById('statsInfo');
+            const loadMoreEl = document.getElementById('loadMoreContainer');
+
+            statsEl.innerText = `Topildi: ${filteredSubscribers.length} ta abonent (Jami bazada: ${subscribers.length} ta)`;
+
+            if (filteredSubscribers.length === 0) {
+                listEl.innerHTML = '<div class="no-results">Hech qanday abonent topilmadi. Qidiruv soʻzini oʻzgartirib koʻring.</div>';
+                loadMoreEl.style.display = 'none';
+                return;
+            }
+
+            const currentBatch = filteredSubscribers.slice(0, displayedCount);
+            
+            let html = '';
+            currentBatch.forEach(sub => {
+                let balanceVal = parseFloat(sub['Баланс']) || 0;
+                let balanceClass = balanceVal < 0 ? 'balance-neg' : 'balance-pos';
+                let balanceText = balanceVal.toLocaleString() + " so'm";
+                
+                let phone = sub['Телефон'] ? String(sub['Телефон']).trim() : '';
+                let phoneFormatted = phone.startsWith('998') ? '+' + phone : phone;
+                let callLink = phone ? `tel:${phoneFormatted}` : '#';
+
+                let address = sub['Адрес'] || 'Manzil koʻrsatilmagan';
+                let mapLink = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
+                let alifLink = 'https://alif.uz';
+
+                html += `
+                    <div class="subscriber-card">
+                        <div class="subscriber-header">
+                            <h3 class="subscriber-name">${sub['Имя'] || 'Nomaʼlum'}</h3>
+                            <span class="subscriber-login">Login: ${sub['Логин'] || '-'}</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-row"><span>Manzil:</span> <b>${address}</b></div>
+                            <div class="info-row"><span>Tarif:</span> <b>${sub['Tarif'] || 'Koʻrsatilmagan'} (${(sub['Стоимость тарифа'] || 0).toLocaleString()} so'm)</b></div>
+                            <div class="info-row"><span>Balans:</span> <span class="balance-badge ${balanceClass}">${balanceText}</span></div>
+                            <div class="info-row"><span>Telefon:</span> <b>${phoneFormatted || 'Yoʻq'}</b></div>
+                        </div>
+                        <div class="btn-group">
+                            <a href="${alifLink}" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
+                            <a href="${mapLink}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
+                            ${phone ? `<a href="${callLink}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+
+            if (displayedCount < filteredSubscribers.length) {
+                loadMoreEl.style.display = 'block';
+            } else {
+                loadMoreEl.style.display = 'none';
             }
         }
+
+        function filterSubscribers() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                filteredSubscribers = subscribers;
+            } else {
+                filteredSubscribers = subscribers.filter(sub => {
+                    const name = (sub['Имя'] || '').toLowerCase();
+                    const login = (sub['Логин'] || '').toLowerCase();
+                    const address = (sub['Адрес'] || '').toLowerCase();
+                    const phone = (sub['Телефон'] || '').toLowerCase();
+                    return name.includes(query) || login.includes(query) || address.includes(query) || phone.includes(query);
+                });
+            }
+            displayedCount = 50;
+            renderSubscribers();
+        }
+
+        function loadMore() {
+            displayedCount += 50;
+            renderSubscribers();
+        }
+
+        renderSubscribers();
     </script>
 </body>
 </html>
