@@ -43,7 +43,6 @@
         .btn-copy { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .btn-copy:hover { background: #5a6268; }
 
-        /* Izoh yozish qismi */
         .comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
         .comment-input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; outline: none; background: #fafafa; }
         .comment-input:focus { border-color: var(--primary); background: #fff; }
@@ -119,7 +118,6 @@
             });
         }
 
-        // Izohni saqlash funksiyasi
         function saveComment(login, commentText) {
             localStorage.setItem('comment_' + login, commentText);
         }
@@ -148,11 +146,11 @@
                 const balance = sub['Баланс'] !== undefined ? sub['Баланс'] : '';
                 const phone = sub['Телефон'] || '';
 
-                // Saqlangan izohni olish
                 const savedComment = localStorage.getItem('comment_' + login) || '';
 
                 const clickUrl = `https://my.click.uz/services/pay?service_id=23185`;
-                const alifUrl = `https://alifmobi.uz`;
+                // Alif Mobi ilovasini to'g'ridan-to'g'ri ochish uchun universal havola (yoki ilova sxemasi)
+                const alifUrl = `https://alifmobi.uz/ru/services`; 
                 const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
 
                 html += `
@@ -175,7 +173,7 @@
 
                         <div class="btn-group">
                             <a href="${clickUrl}" target="_blank" class="btn btn-click" onclick="copyLogin('${login}')">💳 Click orqali to'lash (Loginni nusxalash)</a>
-                            <a href="${alifUrl}" target="_blank" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi orqali to'lash (Loginni nusxalash)</a>
+                            <a href="${alifUrl}" target="_blank" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi ilovasi orqali to'lash</a>
                             <a href="${mapUrl}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
                             <a href="tel:${phone}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
                         </div>
