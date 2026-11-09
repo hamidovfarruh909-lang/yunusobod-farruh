@@ -41,7 +41,6 @@
         .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; }
         .search-box:focus { border-color: var(--primary); }
         
-        /* Excel yuklash bloki */
         .upload-card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; border: 2px dashed var(--primary); }
         .upload-card input[type="file"] { display: none; }
         .upload-btn { display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
@@ -111,17 +110,16 @@
 
         <!-- 1. UMUMIY BAZA BO'LIMI -->
         <div id="mainTab" class="tab-content active">
-            <!-- Excel fayl yuklash tugmasi -->
             <div class="upload-card">
-                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Bazani yangilash uchun Excel faylni tanlang:</p>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Bazani yangi Excel fayl bilan almashtirish:</p>
                 <label class="upload-btn">
-                    📁 Excel faylni yuklash
+                    📁 Excel faylni tanlash
                     <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
                 </label>
             </div>
 
             <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
-            <div id="stats" class="stats">Iltimos, Excel bazani yuklang...</div>
+            <div id="stats" class="stats">Baza yuklanmoqda...</div>
             <div id="subscribersList"></div>
             <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
         </div>
@@ -179,22 +177,22 @@
         let pendingDeleteId = null;
         let pendingDeleteType = null;
 
-        function loadData() {
-            let localSubs = localStorage.getItem('turon_subscribers_list');
-            let localNew = localStorage.getItem('turon_new_subscribers');
-            let localDeleted = localStorage.getItem('turon_deleted_subscribers');
-            
-            if (localNew) newSubscribers = JSON.parse(localNew);
-            if (localDeleted) deletedSubscribers = JSON.parse(localDeleted);
+        function initApp() {
+            try {
+                let localSubs = localStorage.getItem('turon_subscribers_list');
+                let localNew = localStorage.getItem('turon_new_subscribers');
+                let localDeleted = localStorage.getItem('turon_deleted_subscribers');
+                
+                if (localSubs) subscribers = JSON.parse(localSubs);
+                if (localNew) newSubscribers = JSON.parse(localNew);
+                if (localDeleted) deletedSubscribers = JSON.parse(localDeleted);
 
-            checkNewSubscribersDays();
+                checkNewSubscribersDays();
 
-            if (localSubs) {
-                subscribers = JSON.parse(localSubs);
                 filteredSubscribers = [...subscribers];
                 renderAll();
-            } else {
-                document.getElementById('stats').innerText = "Iltimos, yuqoridagi tugma orqali Excel bazani yuklang!";
+            } catch (error) {
+                console.error("Ma'lumotlarni yuklashda xatolik:", error);
             }
         }
 
@@ -211,7 +209,7 @@
                     const worksheet = workbook.Sheets[firstSheetName];
                     
                     subscribers = XLSX.utils.sheet_to_json(worksheet);
-                    saveStorage();
+                    localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
                     filteredSubscribers = [...subscribers];
                     displayedCount = 20;
                     renderAll();
@@ -222,12 +220,6 @@
                 }
             };
             reader.readAsArrayBuffer(file);
-        }
-
-        function saveStorage() {
-            localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
-            localStorage.setItem('turon_new_subscribers', JSON.stringify(newSubscribers));
-            localStorage.setItem('turon_deleted_subscribers', JSON.stringify(deletedSubscribers));
         }
 
         function showToast(message) {
@@ -275,7 +267,10 @@
                 return true;
             });
 
-            if (updated) saveStorage();
+            if (updated) {
+                localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
+                localStorage.setItem('turon_new_subscribers', JSON.stringify(newSubscribers));
+            }
         }
 
         function addNewSubscriber() {
@@ -301,7 +296,7 @@
             };
 
             newSubscribers.unshift(newSub);
-            saveStorage();
+            localStorage.setItem('turon_new_subscribers', JSON.stringify(newSubscribers));
             renderAll();
 
             document.getElementById('newDistrict').value = '';
@@ -338,7 +333,8 @@
                     deletedItem.deletedAt = new Date().toLocaleString();
                     deletedSubscribers.unshift(deletedItem);
                 }
-                saveStorage();
+                localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
+                localStorage.setItem('turon_deleted_subscribers', JSON.stringify(deletedSubscribers));
                 filterSubscribers();
             } else if (pendingDeleteType === 'new') {
                 const index = newSubscribers.findIndex(sub => String(sub.id) === String(pendingDeleteId));
@@ -348,7 +344,8 @@
                     deletedItem.deletedAt = new Date().toLocaleString();
                     deletedSubscribers.unshift(deletedItem);
                 }
-                saveStorage();
+                localStorage.setItem('turon_new_subscribers', JSON.stringify(newSubscribers));
+                localStorage.setItem('turon_deleted_subscribers', JSON.stringify(deletedSubscribers));
                 renderAll();
             }
 
@@ -357,13 +354,4 @@
         }
 
         function copyLogin(loginText) {
-            navigator.clipboard.writeText(loginText).then(() => {
-                showToast("Login nusxalandi!");
-            });
-        }
-
-        function saveComment(login, commentText) {
-            localStorage.setItem('comment_' + login, commentText);
-        }
-
-        functi
+            navigator.clipboard.writeText(loginText).then(() 
