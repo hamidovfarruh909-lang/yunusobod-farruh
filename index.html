@@ -12,6 +12,8 @@
             --primary-dark: #003d82;
             --success: #00a651;
             --success-dark: #00823e;
+            --alif: #5b2d90;
+            --alif-dark: #452170;
             --warning: #ffc107;
             --warning-dark: #e0a800;
             --info: #17a2b8;
@@ -34,18 +36,34 @@
         .name { font-size: 18px; font-weight: bold; color: var(--primary-dark); margin-bottom: 8px; }
         .info-row { font-size: 14px; margin-bottom: 6px; color: var(--text); }
         .info-row span { color: var(--text-secondary); }
-        .badge { display: inline-block; padding: 3px 8px; font-size: 12px; border-radius: 4px; background: #e9ecef; color: #495057; margin-bottom: 8px; }
         .balance { font-weight: bold; color: #dc3545; }
+        
+        .login-box { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px dashed var(--border); margin: 8px 0; }
+        .login-text { font-weight: bold; color: var(--primary); }
+        .btn-copy { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-copy:hover { background: #5a6268; }
+
+        /* Izoh yozish qismi */
+        .comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
+        .comment-input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; outline: none; background: #fafafa; }
+        .comment-input:focus { border-color: var(--primary); background: #fff; }
+        .comment-label { font-size: 12px; font-weight: bold; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; color: white; border: none; cursor: pointer; text-align: center; }
         .btn-click { background-color: var(--success); }
         .btn-click:hover { background-color: var(--success-dark); }
+        .btn-alif { background-color: var(--alif); }
+        .btn-alif:hover { background-color: var(--alif-dark); }
         .btn-map { background-color: var(--warning); color: #000; }
         .btn-map:hover { background-color: var(--warning-dark); }
         .btn-call { background-color: var(--info); }
         .btn-call:hover { background-color: #138496; }
+        
         .load-more { display: block; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 20px 0; text-align: center; }
         .load-more:hover { background: var(--primary-dark); }
+        
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; font-size: 14px; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -61,6 +79,8 @@
         <div id="subscribersList"></div>
         <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
     </div>
+
+    <div id="toast" class="toast">Login nusxalandi!</div>
 
     <script>
         let subscribers = [];
@@ -87,6 +107,23 @@
             }
         }
 
+        function copyLogin(loginText) {
+            navigator.clipboard.writeText(loginText).then(() => {
+                const toast = document.getElementById('toast');
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('Nusxalashda xatolik:', err);
+            });
+        }
+
+        // Izohni saqlash funksiyasi
+        function saveComment(login, commentText) {
+            localStorage.setItem('comment_' + login, commentText);
+        }
+
         function renderSubscribers() {
             const listEl = document.getElementById('subscribersList');
             const statsEl = document.getElementById('stats');
@@ -111,19 +148,34 @@
                 const balance = sub['Баланс'] !== undefined ? sub['Баланс'] : '';
                 const phone = sub['Телефон'] || '';
 
-                const clickUrl = `https://my.click.uz/services/pay?service_id=23185&account[tels_login]=${login}`;
+                // Saqlangan izohni olish
+                const savedComment = localStorage.getItem('comment_' + login) || '';
+
+                const clickUrl = `https://my.click.uz/services/pay?service_id=23185`;
+                const alifUrl = `https://alifmobi.uz`;
                 const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
 
                 html += `
                     <div class="card">
                         <div class="name">${name}</div>
-                        <div class="badge">Login: ${login}</div>
                         <div class="info-row"><span>Manzil:</span> ${address}</div>
                         <div class="info-row"><span>Tarif:</span> ${tariff}</div>
                         <div class="info-row"><span>Balans:</span> <span class="balance">${balance} so'm</span></div>
                         <div class="info-row"><span>Telefon:</span> ${phone}</div>
+                        
+                        <div class="login-box">
+                            <div><span>Login:</span> <strong class="login-text">${login}</strong></div>
+                            <button class="btn-copy" onclick="copyLogin('${login}')">📋 Nusxalash</button>
+                        </div>
+
+                        <div class="comment-section">
+                            <label class="comment-label">💬 Abonent haqida izoh (muomalasi va h.k.):</label>
+                            <textarea class="comment-input" placeholder="Masalan: Yaxshi muomala qildi, kechroq to'layman dedi..." oninput="saveComment('${login}', this.value)">${savedComment}</textarea>
+                        </div>
+
                         <div class="btn-group">
-                            <a href="${clickUrl}" target="_blank" class="btn btn-click">💳 Click orqali to'lash (Login: ${login})</a>
+                            <a href="${clickUrl}" target="_blank" class="btn btn-click" onclick="copyLogin('${login}')">💳 Click orqali to'lash (Loginni nusxalash)</a>
+                            <a href="${alifUrl}" target="_blank" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi orqali to'lash (Loginni nusxalash)</a>
                             <a href="${mapUrl}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
                             <a href="tel:${phone}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
                         </div>
