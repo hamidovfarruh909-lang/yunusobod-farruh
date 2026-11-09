@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turon Telecom - Yunusobod Abonentlari</title>
-    <!-- SheetJS kutubxonasi Excel faylini o'qish uchun -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -15,6 +14,10 @@
             --warning: #ffc107;
             --warning-dark: #e0a800;
             --info: #17a2b8;
+            --danger: #dc3545;
+            --danger-dark: #bd2130;
+            --success: #28a745;
+            --success-dark: #218838;
             --bg: #f4f6f9;
             --card-bg: #fff;
             --text: #333;
@@ -27,19 +30,42 @@
         header { text-align: center; margin-bottom: 20px; }
         h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
         p.subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 15px; }
-        .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; transition: border-color 0.2s; }
+        
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab-btn { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background: #e2e8f0; color: #4a5568; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; }
         .search-box:focus { border-color: var(--primary); }
+        
+        /* Sozlamalar va Forma dizayni */
+        .settings-section { background: var(--card-bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--success); }
+        .settings-section h3 { font-size: 18px; color: var(--success-dark); margin-bottom: 15px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .form-input { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
+        .form-input:focus { border-color: var(--success); }
+        .full-width { grid-column: span 2; }
+        .btn-add { background: var(--success); color: white; border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-add:hover { background: var(--success-dark); }
+
         .stats { font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; text-align: center; }
-        .card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--alif); }
+        .card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--alif); position: relative; }
+        .card.deleted-card { border-left-color: var(--danger); background: #fff5f5; }
+        .card.new-card { border-left-color: var(--success); background: #f0fff4; }
+        
         .name { font-size: 18px; font-weight: bold; color: var(--primary-dark); margin-bottom: 8px; }
         .info-row { font-size: 14px; margin-bottom: 6px; color: var(--text); }
         .info-row span { color: var(--text-secondary); }
-        .balance { font-weight: bold; color: #dc3545; }
+        .balance { font-weight: bold; color: var(--danger); }
+        .reason-badge { display: inline-block; background: #fed7d7; color: #c53030; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+        .days-badge { display: inline-block; background: #c6f6d5; color: #22543d; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
         
         .login-box { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px dashed var(--border); margin: 8px 0; }
         .login-text { font-weight: bold; color: var(--primary); }
         .btn-copy { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-copy:hover { background: #5a6268; }
 
         .comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
         .comment-input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; outline: none; background: #fafafa; }
@@ -49,16 +75,21 @@
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; color: white; border: none; cursor: pointer; text-align: center; }
         .btn-alif { background-color: var(--alif); }
-        .btn-alif:hover { background-color: var(--alif-dark); }
         .btn-map { background-color: var(--warning); color: #000; }
-        .btn-map:hover { background-color: var(--warning-dark); }
         .btn-call { background-color: var(--info); }
-        .btn-call:hover { background-color: #138496; }
+        .btn-delete { background-color: var(--danger); }
         
         .load-more { display: block; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 20px 0; text-align: center; }
-        .load-more:hover { background: var(--primary-dark); }
         
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; font-size: 14px; display: none; z-index: 1000; }
+        /* Modal oyna */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--danger-dark); }
+        .reason-option { display: block; width: 100%; padding: 10px; margin-bottom: 8px; background: #f8f9fa; border: 1px solid var(--border); border-radius: 6px; text-align: left; font-size: 14px; cursor: pointer; font-weight: 500; }
+        .reason-option:hover { background: #e2e8f0; border-color: var(--primary); }
+        .modal-close { display: block; width: 100%; padding: 8px; margin-top: 10px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; font-size: 14px; display: none; z-index: 3000; }
     </style>
 </head>
 <body>
@@ -68,54 +99,258 @@
             <p class="subtitle">Yunusobod tumani abonentlari bazasi</p>
         </header>
 
-        <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
-        <div id="stats" class="stats">Excel baza yuklanmoqda...</div>
+        <!-- Navigatsiya tugmalari -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('main')">📋 Umumiy baza</button>
+            <button class="tab-btn" onclick="switchTab('newSubs')">🆕 Yangi abonentlar (<span id="newCountBadge">0</span>)</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Sozlamalar va arxiv</button>
+        </div>
 
-        <div id="subscribersList"></div>
-        <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
+        <!-- 1. UMUMIY BAZA BO'LIMI -->
+        <div id="mainTab" class="tab-content active">
+            <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
+            <div id="stats" class="stats">Baza yuklanmoqda...</div>
+            <div id="subscribersList"></div>
+            <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
+        </div>
+
+        <!-- 2. YANGI ABONENTLAR BO'LIMI (5 kunlik jadval) -->
+        <div id="newSubsTab" class="tab-content">
+            <div class="stats" style="margin-bottom: 15px;">5 kun ichida umumiy bazaga o'tuvchi yangi abonentlar ro'yxati:</div>
+            <div id="newSubscribersList"></div>
+        </div>
+
+        <!-- 3. SOZLAMALAR VA ARXIV BO'LIMI -->
+        <div id="settingsTab" class="tab-content">
+            <div class="settings-section">
+                <h3>➕ Yangi abonent qo'shish</h3>
+                <div class="form-grid">
+                    <input type="text" id="newDistrict" class="form-input" placeholder="Tuman (masalan: Yunusobod)">
+                    <input type="text" id="newQuarter" class="form-input" placeholder="Kvartal (masalan: 13-mavze)">
+                    <input type="text" id="newBuilding" class="form-input" placeholder="Dom (masalan: 24-uy)">
+                    <input type="text" id="newApartment" class="form-input" placeholder="Xonadon (masalan: 12-kv)">
+                    <input type="text" id="newName" class="form-input" placeholder="Ism familiya">
+                    <input type="text" id="newPhone" class="form-input" placeholder="Telefon raqami">
+                    <input type="text" id="newLogin" class="form-input" placeholder="Login">
+                    <input type="text" id="newTariffPrice" class="form-input" placeholder="Tarif summasi (so'm)">
+                </div>
+                <button class="btn-add" onclick="addNewSubscriber()">Yangi abonentni qo'shish</button>
+            </div>
+
+            <div class="settings-section">
+                <h3>🗑 O'chirilgan abonentlar arxivi</h3>
+                <div id="deletedSubscribersList"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="toast" class="toast">Login nusxalandi!</div>
+    <!-- O'chirish sababini so'rovchi modal oyna -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Abonentni o'chirish sababini tanlang:</div>
+            <button class="reason-option" onclick="confirmDelete('Abonent boshqa provayderga oʻtgan')">1. Abonent boshqa provayderga oʻtgan</button>
+            <button class="reason-option" onclick="confirmDelete('Abonent koʻchib ketgan')">2. Abonent koʻchib ketgan</button>
+            <button class="reason-option" onclick="confirmDelete('Moliyaviy qiyinchilik')">3. Moliyaviy qiyinchilik</button>
+            <button class="reason-option" onclick="confirmDelete('Eshik ochmadi')">4. Eshik ochmadi</button>
+            <button class="modal-close" onclick="closeModal()">Bekor qilish</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Amaliyot bajarildi!</div>
 
     <script>
         let subscribers = [];
+        let newSubscribers = [];
+        let deletedSubscribers = [];
         let filteredSubscribers = [];
         let displayedCount = 20;
+        let pendingDeleteId = null;
+        let pendingDeleteType = null; // 'main' yoki 'new'
 
-        async function loadExcelData() {
+        async function loadData() {
             try {
-                const response = await fetch('YUNUSOBOD_BARRALIK_YAGONA_TARTIBLANGAN (1).xlsx');
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
+                let localSubs = localStorage.getItem('turon_subscribers_list');
+                let localNew = localStorage.getItem('turon_new_subscribers');
+                let localDeleted = localStorage.getItem('turon_deleted_subscribers');
                 
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
+                if (localNew) newSubscribers = JSON.parse(localNew);
+                if (localDeleted) deletedSubscribers = JSON.parse(localDeleted);
+
+                checkNewSubscribersDays(); // 5 kunlik muddatni tekshirish
+
+                if (localSubs) {
+                    subscribers = JSON.parse(localSubs);
+                } else {
+                    const response = await fetch('YUNUSOBOD_BARRALIK_YAGONA_TARTIBLANGAN (1).xlsx');
+                    const arrayBuffer = await response.arrayBuffer();
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    subscribers = XLSX.utils.sheet_to_json(worksheet);
+                    saveStorage();
+                }
                 
-                subscribers = XLSX.utils.sheet_to_json(worksheet);
                 filteredSubscribers = [...subscribers];
-                
-                renderSubscribers();
+                renderAll();
             } catch (error) {
                 document.getElementById('stats').innerText = "Xatolik: Excel faylni o'qishda muammo yuzaga keldi!";
                 console.error(error);
             }
         }
 
+        function saveStorage() {
+            localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
+            localStorage.setItem('turon_new_subscribers', JSON.stringify(newSubscribers));
+            localStorage.setItem('turon_deleted_subscribers', JSON.stringify(deletedSubscribers));
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (tabName === 'main') {
+                document.getElementById('mainTab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else if (tabName === 'newSubs') {
+                document.getElementById('newSubsTab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            } else if (tabName === 'settings') {
+                document.getElementById('settingsTab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+            }
+        }
+
+        // 5 kunlik muddatni tekshirish va umumiy bazaga o'tkazish
+        function checkNewSubscribersDays() {
+            const now = new Date().getTime();
+            const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+            let updated = false;
+
+            newSubscribers = newSubscribers.filter(sub => {
+                const addedTime = sub.addedTimestamp || now;
+                if (now - addedTime >= fiveDaysMs) {
+                    // 6-kuni umumiy bazaga o'tkazamiz
+                    subscribers.unshift({
+                        'Имя': sub.name,
+                        'Логин': sub.login,
+                        'Тариф': `${sub.tariffPrice} so'm`,
+                        'Баланс': '0',
+                        'Телефон': sub.phone,
+                        'Адрес': `${sub.district}, ${sub.quarter}, ${sub.building}-dom, ${sub.apartment}-kv`
+                    });
+                    updated = true;
+                    return false; // yangi abonentlar jadvalidan chiqarish
+                }
+                return true;
+            });
+
+            if (updated) saveStorage();
+        }
+
+        function addNewSubscriber() {
+            const district = document.getElementById('newDistrict').value.trim();
+            const quarter = document.getElementById('newQuarter').value.trim();
+            const building = document.getElementById('newBuilding').value.trim();
+            const apartment = document.getElementById('newApartment').value.trim();
+            const name = document.getElementById('newName').value.trim();
+            const phone = document.getElementById('newPhone').value.trim();
+            const login = document.getElementById('newLogin').value.trim();
+            const tariffPrice = document.getElementById('newTariffPrice').value.trim();
+
+            if (!name || !login) {
+                alert("Iltimos, Ism va Login maydonlarini to'ldiring!");
+                return;
+            }
+
+            const newSub = {
+                id: 'new_' + Date.now(),
+                district, quarter, building, apartment, name, phone, login, tariffPrice,
+                addedTimestamp: new Date().getTime(),
+                addedDate: new Date().toLocaleDateString()
+            };
+
+            newSubscribers.unshift(newSub);
+            saveStorage();
+            renderAll();
+
+            // Maydonlarni tozalash
+            document.getElementById('newDistrict').value = '';
+            document.getElementById('newQuarter').value = '';
+            document.getElementById('newBuilding').value = '';
+            document.getElementById('newApartment').value = '';
+            document.getElementById('newName').value = '';
+            document.getElementById('newPhone').value = '';
+            document.getElementById('newLogin').value = '';
+            document.getElementById('newTariffPrice').value = '';
+
+            showToast("Yangi abonent 5 kunlik jadvalga qo'shildi!");
+            switchTab('newSubs');
+        }
+
+        function openDeleteModal(id, type = 'main') {
+            pendingDeleteId = id;
+            pendingDeleteType = type;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            pendingDeleteId = null;
+            pendingDeleteType = null;
+        }
+
+        function confirmDelete(reason) {
+            if (pendingDeleteType === 'main') {
+                const index = subscribers.findIndex(sub => String(sub['Логин']) === String(pendingDeleteId));
+                if (index !== -1) {
+                    const deletedItem = subscribers.splice(index, 1)[0];
+                    deletedItem.deleteReason = reason;
+                    deletedItem.deletedAt = new Date().toLocaleString();
+                    deletedSubscribers.unshift(deletedItem);
+                }
+                saveStorage();
+                filterSubscribers();
+            } else if (pendingDeleteType === 'new') {
+                const index = newSubscribers.findIndex(sub => String(sub.id) === String(pendingDeleteId));
+                if (index !== -1) {
+                    const deletedItem = newSubscribers.splice(index, 1)[0];
+                    deletedItem.deleteReason = reason;
+                    deletedItem.deletedAt = new Date().toLocaleString();
+                    deletedSubscribers.unshift(deletedItem);
+                }
+                saveStorage();
+                renderAll();
+            }
+
+            closeModal();
+            showToast("Abonent arxivga olib qo'yildi!");
+        }
+
         function copyLogin(loginText) {
             navigator.clipboard.writeText(loginText).then(() => {
-                const toast = document.getElementById('toast');
-                toast.style.display = 'block';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 2000);
-            }).catch(err => {
-                console.error('Nusxalashda xatolik:', err);
+                showToast("Login nusxalandi!");
             });
         }
 
         function saveComment(login, commentText) {
             localStorage.setItem('comment_' + login, commentText);
+        }
+
+        function renderAll() {
+            renderSubscribers();
+            renderNewSubscribers();
+            renderDeletedSubscribers();
+            document.getElementById('newCountBadge').innerText = newSubscribers.length;
         }
 
         function renderSubscribers() {
@@ -133,79 +368,4 @@
                 return;
             }
 
-            let html = '';
-            toDisplay.forEach(sub => {
-                const name = sub['Имя'] || 'Noma\'lum';
-                const login = sub['Логин'] || '';
-                const address = sub['Адрес'] || '';
-                const tariff = sub['Тариф'] || '';
-                const balance = sub['Баланс'] !== undefined ? sub['Баланс'] : '';
-                const phone = sub['Телефон'] || '';
-
-                const savedComment = localStorage.getItem('comment_' + login) || '';
-
-                const alifUrl = `https://alifmobi.page.link/providerse`;
-                const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
-
-                html += `
-                    <div class="card">
-                        <div class="name">${name}</div>
-                        <div class="info-row"><span>Manzil:</span> ${address}</div>
-                        <div class="info-row"><span>Tarif:</span> ${tariff}</div>
-                        <div class="info-row"><span>Balans:</span> <span class="balance">${balance} so'm</span></div>
-                        <div class="info-row"><span>Telefon:</span> ${phone}</div>
-                        
-                        <div class="login-box">
-                            <div><span>Login:</span> <strong class="login-text">${login}</strong></div>
-                            <button class="btn-copy" onclick="copyLogin('${login}')">📋 Nusxalash</button>
-                        </div>
-
-                        <div class="comment-section">
-                            <label class="comment-label">💬 Abonent haqida izoh (muomalasi va h.k.):</label>
-                            <textarea class="comment-input" placeholder="Masalan: Yaxshi muomala qildi, kechroq to'layman dedi..." oninput="saveComment('${login}', this.value)">${savedComment}</textarea>
-                        </div>
-
-                        <div class="btn-group">
-                            <a href="${alifUrl}" target="_blank" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi orqali to'lash (Loginni nusxalash)</a>
-                            <a href="${mapUrl}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
-                            <a href="tel:${phone}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            listEl.innerHTML = html;
-            
-            if (displayedCount < filteredSubscribers.length) {
-                loadMoreBtn.style.display = 'block';
-            } else {
-                loadMoreBtn.style.display = 'none';
-            }
-        }
-
-        function filterSubscribers() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            if (!query) {
-                filteredSubscribers = [...subscribers];
-            } else {
-                filteredSubscribers = subscribers.filter(sub => {
-                    const name = String(sub['Имя'] || '').toLowerCase();
-                    const login = String(sub['Логин'] || '').toLowerCase();
-                    const address = String(sub['Адрес'] || '').toLowerCase();
-                    const phone = String(sub['Телефон'] || '').toLowerCase();
-                    return name.includes(query) || login.includes(query) || address.includes(query) || phone.includes(query);
-                });
-            }
-            displayedCount = 20;
-            renderSubscribers();
-        }
-
-        function loadMore() {
-            displayedCount += 50;
-            renderSubscribers();
-        }
-
-        loadExcelData();
-    </script>
-</body>
-</html>
+        
