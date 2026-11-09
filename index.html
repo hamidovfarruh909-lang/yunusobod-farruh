@@ -148,9 +148,9 @@
 
                 const savedComment = localStorage.getItem('comment_' + login) || '';
 
-                const clickUrl = `https://my.click.uz/services/pay?service_id=23185`;
-                // Alif Mobi ilovasini to'g'ridan-to'g'ri ochish uchun universal havola (yoki ilova sxemasi)
-                const alifUrl = `https://alifmobi.uz/ru/services`; 
+                // Intent orqali to'g'ridan-to'g'ri ilovaning o'zini ochish havolalari
+                const clickAppUrl = `intent://my.click.uz/#Intent;package=uz.click.app;action=android.intent.action.VIEW;end;`;
+                const alifAppUrl = `intent://alifmobi.uz/#Intent;package=uz.alifsoft.alifmobi;action=android.intent.action.VIEW;end;`;
                 const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
 
                 html += `
@@ -172,8 +172,8 @@
                         </div>
 
                         <div class="btn-group">
-                            <a href="${clickUrl}" target="_blank" class="btn btn-click" onclick="copyLogin('${login}')">💳 Click orqali to'lash (Loginni nusxalash)</a>
-                            <a href="${alifUrl}" target="_blank" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi ilovasi orqali to'lash</a>
+                            <a href="${clickAppUrl}" class="btn btn-click" onclick="copyLogin('${login}')">💳 Click ilovasini ochish (Loginni nusxalash)</a>
+                            <a href="${alifAppUrl}" class="btn btn-alif" onclick="copyLogin('${login}')">🟣 Alif Mobi ilovasini ochish (Loginni nusxalash)</a>
                             <a href="${mapUrl}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
                             <a href="tel:${phone}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
                         </div>
