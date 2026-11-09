@@ -3,167 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turon Telecom - Yunusobod Abonentlari Bazasi</title>
+    <title>Turon Telecom - Yunusobod Abonentlari</title>
+    <!-- SheetJS kutubxonasi Excel faylini o'qish uchun -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary-color: #0056b3;
+            --primary: #0056b3;
             --primary-dark: #003d82;
-            --success-color: #28a745;
-            --success-dark: #218838;
-            --warning-color: #ffc107;
+            --success: #00a651;
+            --success-dark: #00823e;
+            --warning: #ffc107;
             --warning-dark: #e0a800;
-            --info-color: #17a2b8;
-            --bg-color: #f4f6f9;
+            --info: #17a2b8;
+            --bg: #f4f6f9;
             --card-bg: #fff;
-            --text-color: #333;
+            --text: #333;
+            --text-secondary: #666;
+            --border: #ddd;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; color: var(--text-color); }
-        .container { max-width: 900px; margin: 0 auto; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h1 { color: var(--primary-color); text-align: center; margin-bottom: 5px; font-size: 24px; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
-        
-        .search-box { margin-bottom: 20px; text-align: center; }
-        .search-box input { width: 100%; max-width: 500px; padding: 14px 18px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; outline: none; transition: border-color 0.3s; box-sizing: border-box; }
-        .search-box input:focus { border-color: var(--primary-color); }
-        .stats { text-align: center; font-size: 13px; color: #777; margin-bottom: 15px; }
-
-        .subscriber-card { background: #f8fafc; border-left: 5px solid var(--primary-color); padding: 18px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .subscriber-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-        .subscriber-name { font-size: 18px; font-weight: bold; color: var(--primary-color); margin: 0; }
-        .subscriber-login { background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; color: #475569; }
-        
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; font-size: 14px; margin-bottom: 15px; }
-        .info-row span { color: #555; }
-
-        .balance-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
-        .balance-neg { background: #fee2e2; color: #991b1b; }
-        .balance-pos { background: #dcfce7; color: #166534; }
-
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; text-align: center; transition: background 0.2s; }
-        
-        .btn-pay { background: var(--success-color); color: white; }
-        .btn-pay:hover { background: var(--success-dark); }
-
-        .btn-map { background: var(--warning-color); color: #000; }
-        .btn-map:hover { background: var(--warning-dark); }
-
-        .btn-call { background: var(--info-color); color: white; }
-        .btn-call:hover { background: #138496; }
-
-        #loadMoreContainer { text-align: center; margin: 25px 0; }
-        .btn-load { background: var(--primary-color); color: white; border: none; padding: 12px 25px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-load:hover { background: var(--primary-dark); }
-        .no-results { text-align: center; color: #888; padding: 30px; font-size: 16px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
+        p.subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 15px; }
+        .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; transition: border-color 0.2s; }
+        .search-box:focus { border-color: var(--primary); }
+        .stats { font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; text-align: center; }
+        .card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        .name { font-size: 18px; font-weight: bold; color: var(--primary-dark); margin-bottom: 8px; }
+        .info-row { font-size: 14px; margin-bottom: 6px; color: var(--text); }
+        .info-row span { color: var(--text-secondary); }
+        .badge { display: inline-block; padding: 3px 8px; font-size: 12px; border-radius: 4px; background: #e9ecef; color: #495057; margin-bottom: 8px; }
+        .balance { font-weight: bold; color: #dc3545; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; color: white; border: none; cursor: pointer; text-align: center; }
+        .btn-click { background-color: var(--success); }
+        .btn-click:hover { background-color: var(--success-dark); }
+        .btn-map { background-color: var(--warning); color: #000; }
+        .btn-map:hover { background-color: var(--warning-dark); }
+        .btn-call { background-color: var(--info); }
+        .btn-call:hover { background-color: #138496; }
+        .load-more { display: block; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 20px 0; text-align: center; }
+        .load-more:hover { background: var(--primary-dark); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Turon Telecom</h1>
-        <div class="subtitle">Yunusobod tumani abonentlari bazasi platformasi</div>
+        <header>
+            <h1>Turon Telecom</h1>
+            <p class="subtitle">Yunusobod tumani abonentlari bazasi</p>
+        </header>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
-        </div>
-        <div class="stats" id="statsInfo">Jami abonentlar yuklanmoqda...</div>
+        <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
+        <div id="stats" class="stats">Excel baza yuklanmoqda...</div>
 
-        <div id="subscriberList"></div>
-        <div id="loadMoreContainer" style="display:none;">
-            <button class="btn-load" onclick="loadMore()">Ko'proq ko'rsatish (+50)</button>
-        </div>
+        <div id="subscribersList"></div>
+        <button id="loadMoreBtn" class="load-more" onclick="loadMore()" style="display: none;">Ko'proq yuklash (+50)</button>
     </div>
 
     <script>
-        // Jami 14681 ta abonent bazasi
-        const subscribers = [
-            {"Логин": "tmi946054213", "Имя": "Сагомонова Ануш Албертовна", "Tarif": "FTTX Comfort 60 (архивный)", "Стоимость тарифа": 145000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 123 1", "Телефон": "998946054213", "Баланс": -145000.0},
-            {"Логин": "tmi904275596", "Имя": "Шаймардонов Жавлон Зокир угли", "Tarif": "Barqaror /Стабильно (архив)", "Стоимость тарифа": 125000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 2А 1", "Телефон": "998904275596", "Баланс": -125000.0},
-            {"Логин": "t2121243", "Имя": "Арсланов Хусан Мелиевич", "Tarif": "Barqaror /Стабильно", "Стоимость тарифа": 125000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 4А 1", "Телефон": "998998964000", "Баланс": -125000.0},
-            {"Логин": "t2122495", "Имя": "Исмаилова Рена Карибовна", "Tarif": "Foydali /Выгодно (архив)", "Стоимость тарифа": 155000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 115 2", "Телефон": "998909605005", "Баланс": -153350.0},
-            {"Логин": "t2123318", "Имя": "Коровина Наталья Вячеславовна", "Tarif": "Cheksiz /Безгранично (архив)", "Стоимость тарифа": 200000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 125 4", "Телефон": "998903151607", "Баланс": -199950.0},
-            {"Логин": "t2124198", "Имя": "Кельдиярова Гульчехра Сайдиевна", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 129 6", "Телефон": "998909262555", "Баланс": -99000.0},
-            {"Логин": "tmi972781035", "Имя": "Эрназаров Комилжон Юлдашалиевич", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 131 6", "Телефон": "998972781035", "Баланс": -85000.0},
-            {"Логин": "t2611176", "Имя": "Абдиев Гайрат Ергашевич", "Tarif": "Arzon /Доступно (архив)", "Стоимость тарифа": 90000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 131 6", "Телефон": "998972611176", "Баланс": -90000.0},
-            {"Логин": "t2121683", "Имя": "Мингалимова Динара Едвановна", "Tarif": "Скорость 2 (архив)", "Стоимость тарифа": 85000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 2А 6", "Телефон": "998903454785", "Баланс": -84450.0},
-            {"Логин": "tyui901871869", "Имя": "КУРАЛБАЙЕВ СУЛТАН ПУЛАТОВИCХ", "Tarif": "Max 10", "Стоимость тарифа": 105000.0, "Адрес": "Ташкент Юнусабадский квартал 1 (Амир Тимур шох) 121 10", "Телефон": "998901871869", "Баланс": -105000.0}
-        ];
+        let subscribers = [];
+        let filteredSubscribers = [];
+        let displayedCount = 20;
 
-        let displayedCount = 50;
-        let filteredSubscribers = subscribers;
+        async function loadExcelData() {
+            try {
+                const response = await fetch('YUNUSOBOD_BARRALIK_YAGONA_TARTIBLANGAN (1).xlsx');
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                subscribers = XLSX.utils.sheet_to_json(worksheet);
+                filteredSubscribers = [...subscribers];
+                
+                renderSubscribers();
+            } catch (error) {
+                document.getElementById('stats').innerText = "Xatolik: Excel faylni o'qishda muammo yuzaga keldi!";
+                console.error(error);
+            }
+        }
 
         function renderSubscribers() {
-            const listEl = document.getElementById('subscriberList');
-            const statsEl = document.getElementById('statsInfo');
-            const loadMoreEl = document.getElementById('loadMoreContainer');
-
+            const listEl = document.getElementById('subscribersList');
+            const statsEl = document.getElementById('stats');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
             statsEl.innerText = `Topildi: ${filteredSubscribers.length} ta abonent (Jami bazada: ${subscribers.length} ta)`;
-
-            if (filteredSubscribers.length === 0) {
-                listEl.innerHTML = '<div class="no-results">Hech qanday abonent topilmadi. Qidiruv soʻzini oʻzgartirib koʻring.</div>';
-                loadMoreEl.style.display = 'none';
+            
+            const toDisplay = filteredSubscribers.slice(0, displayedCount);
+            
+            if (toDisplay.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Hech qanday abonent topilmadi.</p>';
+                loadMoreBtn.style.display = 'none';
                 return;
             }
 
-            const currentBatch = filteredSubscribers.slice(0, displayedCount);
-            
             let html = '';
-            currentBatch.forEach(sub => {
-                let balanceVal = parseFloat(sub['Баланс']) || 0;
-                let balanceClass = balanceVal < 0 ? 'balance-neg' : 'balance-pos';
-                let balanceText = balanceVal.toLocaleString() + " so'm";
-                
-                let phone = sub['Телефон'] ? String(sub['Телефон']).trim() : '';
-                let phoneFormatted = phone.startsWith('998') ? '+' + phone : phone;
-                let callLink = phone ? `tel:${phoneFormatted}` : '#';
+            toDisplay.forEach(sub => {
+                const name = sub['Имя'] || 'Noma\'lum';
+                const login = sub['Логин'] || '';
+                const address = sub['Адрес'] || '';
+                const tariff = sub['Тариф'] || '';
+                const balance = sub['Баланс'] !== undefined ? sub['Баланс'] : '';
+                const phone = sub['Телефон'] || '';
 
-                let address = sub['Адрес'] || 'Manzil koʻrsatilmagan';
-                let mapLink = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
-                let alifLink = 'https://alif.uz';
+                const clickUrl = `https://my.click.uz/services/pay?service_id=23185&account[tels_login]=${login}`;
+                const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
 
                 html += `
-                    <div class="subscriber-card">
-                        <div class="subscriber-header">
-                            <h3 class="subscriber-name">${sub['Имя'] || 'Nomaʼlum'}</h3>
-                            <span class="subscriber-login">Login: ${sub['Логин'] || '-'}</span>
-                        </div>
-                        <div class="info-grid">
-                            <div class="info-row"><span>Manzil:</span> <b>${address}</b></div>
-                            <div class="info-row"><span>Tarif:</span> <b>${sub['Tarif'] || 'Koʻrsatilmagan'} (${(sub['Стоимость тарифа'] || 0).toLocaleString()} so'm)</b></div>
-                            <div class="info-row"><span>Balans:</span> <span class="balance-badge ${balanceClass}">${balanceText}</span></div>
-                            <div class="info-row"><span>Telefon:</span> <b>${phoneFormatted || 'Yoʻq'}</b></div>
-                        </div>
+                    <div class="card">
+                        <div class="name">${name}</div>
+                        <div class="badge">Login: ${login}</div>
+                        <div class="info-row"><span>Manzil:</span> ${address}</div>
+                        <div class="info-row"><span>Tarif:</span> ${tariff}</div>
+                        <div class="info-row"><span>Balans:</span> <span class="balance">${balance} so'm</span></div>
+                        <div class="info-row"><span>Telefon:</span> ${phone}</div>
                         <div class="btn-group">
-                            <a href="${alifLink}" target="_blank" class="btn btn-pay">💳 Alif orqali to'lov</a>
-                            <a href="${mapLink}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
-                            ${phone ? `<a href="${callLink}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>` : ''}
+                            <a href="${clickUrl}" target="_blank" class="btn btn-click">💳 Click orqali to'lash (Login: ${login})</a>
+                            <a href="${mapUrl}" target="_blank" class="btn btn-map">📍 Yandex Maps (Manzil)</a>
+                            <a href="tel:${phone}" class="btn btn-call">📞 Qo'ng'iroq qilish</a>
                         </div>
                     </div>
                 `;
             });
-
+            
             listEl.innerHTML = html;
-
+            
             if (displayedCount < filteredSubscribers.length) {
-                loadMoreEl.style.display = 'block';
+                loadMoreBtn.style.display = 'block';
             } else {
-                loadMoreEl.style.display = 'none';
+                loadMoreBtn.style.display = 'none';
             }
         }
 
         function filterSubscribers() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             if (!query) {
-                filteredSubscribers = subscribers;
+                filteredSubscribers = [...subscribers];
             } else {
                 filteredSubscribers = subscribers.filter(sub => {
-                    const name = (sub['Имя'] || '').toLowerCase();
-                    const login = (sub['Логин'] || '').toLowerCase();
-                    const address = (sub['Адрес'] || '').toLowerCase();
-                    const phone = (sub['Телефон'] || '').toLowerCase();
+                    const name = String(sub['Имя'] || '').toLowerCase();
+                    const login = String(sub['Логин'] || '').toLowerCase();
+                    const address = String(sub['Адрес'] || '').toLowerCase();
+                    const phone = String(sub['Телефон'] || '').toLowerCase();
                     return name.includes(query) || login.includes(query) || address.includes(query) || phone.includes(query);
                 });
             }
-            displayedCount = 50;
+            displayedCount = 20;
             renderSubscribers();
         }
 
@@ -172,7 +162,7 @@
             renderSubscribers();
         }
 
-        renderSubscribers();
+        loadExcelData();
     </script>
 </body>
 </html>
