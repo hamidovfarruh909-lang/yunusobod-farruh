@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turon Telecom - Yunusobod Abonentlari</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #0056b3;
@@ -41,11 +40,6 @@
         .search-box { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; outline: none; }
         .search-box:focus { border-color: var(--primary); }
         
-        .upload-card { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; border: 2px dashed var(--primary); }
-        .upload-card input[type="file"] { display: none; }
-        .upload-btn { display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .upload-btn:hover { background: var(--primary-dark); }
-
         .settings-section { background: var(--card-bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--success); }
         .settings-section h3 { font-size: 18px; color: var(--success-dark); margin-bottom: 15px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
@@ -110,14 +104,6 @@
 
         <!-- 1. UMUMIY BAZA BO'LIMI -->
         <div id="mainTab" class="tab-content active">
-            <div class="upload-card">
-                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Bazani yangi Excel fayl bilan almashtirish (agar kerak bo'lsa):</p>
-                <label class="upload-btn">
-                    📁 Excel faylni tanlash
-                    <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
-                </label>
-            </div>
-
             <input type="text" id="searchInput" class="search-box" placeholder="Ism, login, manzil yoki telefon raqami bo'yicha qidirish..." oninput="filterSubscribers()">
             <div id="stats" class="stats">Baza yuklanmoqda...</div>
             <div id="subscribersList"></div>
@@ -194,32 +180,6 @@
             } catch (error) {
                 console.error("Ma'lumotlarni yuklashda xatolik:", error);
             }
-        }
-
-        function handleExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    subscribers = XLSX.utils.sheet_to_json(worksheet);
-                    localStorage.setItem('turon_subscribers_list', JSON.stringify(subscribers));
-                    filteredSubscribers = [...subscribers];
-                    displayedCount = 20;
-                    renderAll();
-                    showToast("Excel baza muvaffaqiyatli yuklandi!");
-                } catch (error) {
-                    alert("Excel faylni o'qishda xatolik yuz berdi!");
-                    console.error(error);
-                }
-            };
-            reader.readAsArrayBuffer(file);
         }
 
         function showToast(message) {
@@ -354,4 +314,54 @@
         }
 
         function copyLogin(loginText) {
-            navigator.clipboard.writeText
+            navigator.clipboard.writeText(loginText).then(() => {
+                showToast("Login nusxalandi!");
+            });
+        }
+
+        function saveComment(login, commentText) {
+            localStorage.setItem('comment_' + login, commentText);
+        }
+
+        function renderAll() {
+            renderSubscribers();
+            renderNewSubscribers();
+            renderDeletedSubscribers();
+            document.getElementById('newCountBadge').innerText = newSubscribers.length;
+        }
+
+        function renderSubscribers() {
+            const listEl = document.getElementById('subscribersList');
+            const statsEl = document.getElementById('stats');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            if (subscribers.length === 0) {
+                statsEl.innerText = "Hozircha baza bo'sh. 'Sozlamalar va arxiv' bo'limidan yangi abonent qo'shishingiz mumkin.";
+                listEl.innerHTML = '';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            statsEl.innerText = `Topildi: ${filteredSubscribers.length} ta abonent (Jami bazada: ${subscribers.length} ta)`;
+            
+            const toDisplay = filteredSubscribers.slice(0, displayedCount);
+            
+            if (toDisplay.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Hech qanday abonent topilmadi.</p>';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            toDisplay.forEach(sub => {
+                const name = sub['Имя'] || 'Noma\'lum';
+                const login = sub['Логин'] || '';
+                const address = sub['Адрес'] || '';
+                const tariff = sub['Тариф'] || '';
+                const balance = sub['Баланс'] !== undefined ? sub['Баланс'] : '';
+                const phone = sub['Телефон'] || '';
+                const savedComment = localStorage.getItem('comment_' + login) || '';
+                const alifUrl = `https://alifmobi.page.link/providerse`;
+                const mapUrl = `https://yandex.uz/maps/?text=${encodeURIComponent(address)}`;
+
+      
